@@ -22,6 +22,8 @@
                 backButtonText: '',
                 completeQuizText: '',
                 tryAgainText: '',
+                correctAnswerText: 'Correct. ',
+                incorrectAnswerText: 'Incorrect. ',
                 questionCountText: 'Question %current of %total',
                 preventUnansweredText: 'You must select at least one answer.',
                 questionTemplateText:  '%count. %text',
@@ -297,9 +299,8 @@
                         if (plugin.config.perQuestionResponseMessaging || plugin.config.completionResponseMessaging) {
                             // Now let's append the correct / incorrect response messages
                             var responseHTML = $('<ul class="' + responsesClass + '"></ul>');
-                            responseHTML.append('<li class="' + correctResponseClass + '">' + question.correct + '</li>');
-                            responseHTML.append('<li class="' + incorrectResponseClass + '">' + question.incorrect + '</li>');
-
+                            responseHTML.append('<li class="' + correctResponseClass + '">' + plugin.config.correctAnswerText + question.correct + '</li>');
+                            responseHTML.append('<li class="' + incorrectResponseClass + '">' + plugin.config.incorrectAnswerText + question.incorrect + '</li>');
                             // Append responses to question
                             questionHTML.append(responseHTML);
                         }
