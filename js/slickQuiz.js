@@ -54,7 +54,13 @@
                 events: {
                     onStartQuiz: function (options) {},
                     onCompleteQuiz: function (options) {}  // reserved: options.questionCount, options.score
-                }
+                },
+                // JSON structure
+                option_key: 'option',
+                question_content_key: 'q',
+                answers_key: 'a',
+                correct_key: 'correct',
+                incorrect_key: 'incorrect'
             },
 
             // Class Name Strings (Used for building quiz and for selectors)
@@ -153,6 +159,13 @@
 
         plugin.config = $.extend(defaults, options);
 
+        // Shortcuts
+        var answers_key = plugin.config.answers_key;
+        var option_key = plugin.config.option_key;
+        var question_content_key = plugin.config.question_content_key;
+        var correct_key = plugin.config.correct_key;
+        var incorrect_key = plugin.config.incorrect_key;
+
         // Set via json option or quizJSON variable (see slickQuiz-config.js)
         var quizValues = (plugin.config.json ? plugin.config.json : typeof quizJSON != 'undefined' ? quizJSON : null);
 
@@ -238,17 +251,17 @@
                         var formatQuestion = '';
                         if (plugin.config.displayQuestionNumber) {
                             formatQuestion = plugin.config.questionTemplateText
-                                .replace('%count', count).replace('%text', question.q);
+                                .replace('%count', count).replace('%text', question[question_content_key]);
                         } else {
-                            formatQuestion = question.q;
+                            formatQuestion = question[question_content_key];
                         }
                         questionHTML.append('<h3>' + formatQuestion + '</h3>');
 
                         // Count the number of true values
                         var truths = 0;
-                        for (i in question.a) {
-                            if (question.a.hasOwnProperty(i)) {
-                                answer = question.a[i];
+                        for (i in question[answers_key]) {
+                            if (question[answers_key].hasOwnProperty(i)) {
+                                answer = question[answers_key][i];
                                 if (answer.correct) {
                                     truths++;
                                 }
@@ -260,8 +273,8 @@
 
                         // Get the answers
                         var answers = plugin.config.randomSortAnswers ?
-                            question.a.sort(function() { return (Math.round(Math.random())-0.5); }) :
-                            question.a;
+                            question[answers_key].sort(function() { return (Math.round(Math.random())-0.5); }) :
+                            question[answers_key];
 
                         // prepare a name for the answer inputs based on the question
                         var selectAny     = question.select_any ? question.select_any : false,
@@ -276,14 +289,14 @@
 
                         for (i in answers) {
                             if (answers.hasOwnProperty(i)) {
-                                answer   = answers[i],
+                                answer   = answers[i];
                                 optionId = inputName + '_' + i.toString();
 
                                 // If question has >1 true answers and is not a select any, use checkboxes; otherwise, radios
                                 var input = '<input id="' + optionId + '" name="' + inputName +
                                             '" type="' + inputType + '" /> ';
 
-                                var optionLabel = '<label for="' + optionId + '">' + answer.option + '</label>';
+                                var optionLabel = '<label for="' + optionId + '">' + answer[option_key] + '</label>';
 
                                 var answerContent = $('<li></li>')
                                     .append(input)
@@ -299,8 +312,9 @@
                         if (plugin.config.perQuestionResponseMessaging || plugin.config.completionResponseMessaging) {
                             // Now let's append the correct / incorrect response messages
                             var responseHTML = $('<ul class="' + responsesClass + '"></ul>');
-                            responseHTML.append('<li class="' + correctResponseClass + '">' + plugin.config.correctAnswerText + question.correct + '</li>');
-                            responseHTML.append('<li class="' + incorrectResponseClass + '">' + plugin.config.incorrectAnswerText + question.incorrect + '</li>');
+                            responseHTML.append('<li class="' + correctResponseClass + '">' + plugin.config.correctAnswerText + ' ' + question[correct_key] + '</li>');
+                            responseHTML.append('<li class="' + incorrectResponseClass + '">' + plugin.config.incorrectAnswerText + ' ' + question[incorrect_key] + '</li>');
+
                             // Append responses to question
                             questionHTML.append(responseHTML);
                         }
@@ -424,7 +438,7 @@
                     answerLIs     = questionLI.find(_answers + ' li'),
                     answerSelects = answerLIs.find('input:checked'),
                     questionIndex = parseInt(questionLI.attr('id').replace(/(question)/, ''), 10),
-                    answers       = questions[questionIndex].a,
+                    answers       = questions[questionIndex][answers_key],
                     selectAny     = questions[questionIndex].select_any ? questions[questionIndex].select_any : false;
 
                 answerLIs.addClass(incorrectResponseClass);
